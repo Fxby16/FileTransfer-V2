@@ -1,0 +1,10 @@
+[package]
+name = "FileTransfer-V2"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+sha2 = "0.10"
+eframe = "0.27"
+whoami = "1.6.0"
+nfd = "0.0.4"
