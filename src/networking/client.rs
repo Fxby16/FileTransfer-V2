@@ -228,8 +228,8 @@ pub fn info_socket(responders_list : &mut Arc<Mutex<HashSet<PingResponse>>>) {
     //println!("{}", socket.broadcast().unwrap());
 
     loop {
-        //let broadcast_addr = "255.255.255.255:24934";
-        let broadcast_addr = "192.168.1.9:24934";
+        let broadcast_addr = "255.255.255.255:24934";
+        //let broadcast_addr = "192.168.1.9:24934";
         let ping_message = b"ping";
         let mut responders = HashSet::new();
 
