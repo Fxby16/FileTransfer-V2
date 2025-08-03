@@ -4,3 +4,4 @@
 - translate all the string to english
 - improve the ui
 - allow to cancel ongoing transfers
+- write the readme
