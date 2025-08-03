@@ -3,6 +3,7 @@ use std::io::{BufRead, Read, Write};
 use std::fs::File;
 use std::sync::{Arc, Mutex};
 
+use local_ip_address::local_ip;
 use sha2::digest::typenum::ToInt;
 
 use crate::common::{self, counter};
@@ -216,7 +217,7 @@ pub fn data_connection(key: u32, mut dest: std::net::SocketAddr, file_str: Strin
 }
 
 pub fn info_socket(responders_list : &mut Arc<Mutex<HashSet<PingResponse>>>) {
-    let socket = UdpSocket::bind("0.0.0.0:0").expect("Could not bind UDP socket");
+    let socket = UdpSocket::bind("0.0.0.0:24936").expect("Could not bind UDP socket");
 
     //println!("{}", socket.local_addr().unwrap().ip().to_string());
 
@@ -226,6 +227,10 @@ pub fn info_socket(responders_list : &mut Arc<Mutex<HashSet<PingResponse>>>) {
         .expect("set_read_timeout call failed");
     
     //println!("{}", socket.broadcast().unwrap());
+
+    let local_ip = local_ip().unwrap();
+
+    //println!("This is my local IP address: {:?}", local_ip);
 
     loop {
         let broadcast_addr = "255.255.255.255:24934";
@@ -251,6 +256,8 @@ pub fn info_socket(responders_list : &mut Arc<Mutex<HashSet<PingResponse>>>) {
                     responders.insert(PingResponse::new(src, os, hostname));
                 }
             }
+
+            responders.retain(|r| r.addr.ip() != local_ip);
 
             //println!("Responders: {:?}", responders);
 

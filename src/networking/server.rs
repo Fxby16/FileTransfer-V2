@@ -366,7 +366,7 @@ pub fn data_connection(status: Arc<Mutex<HashMap<u32, common::transfer_state::Tr
 
 pub fn info_socket() {
     let socket = UdpSocket::bind("0.0.0.0:24934").expect("Could not bind UDP socket");
-    //println!("UDP socket in ascolto su 0.0.0.0:24934");
+    println!("UDP socket in ascolto su 0.0.0.0:24934");
 
     //println!("{}", socket.local_addr().unwrap().ip().to_string());
 
@@ -374,7 +374,7 @@ pub fn info_socket() {
     loop {
         match socket.recv_from(&mut buf) {
             Ok((n, src)) => {
-                //println!("Ricevuto ping da {}: {} bytes", src, n);
+                println!("Ricevuto ping da {}: {} bytes", src, n);
                 let response = format!(
                     "{}\n{}\n",
                     whoami::username(),

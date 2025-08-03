@@ -1,0 +1,6 @@
+- display message when computing file hash
+- display some kind of notification when there is a new incoming request
+- fix the status section since the text exits the screen
+- translate all the string to english
+- improve the ui
+- allow to cancel ongoing transfers
