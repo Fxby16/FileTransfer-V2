@@ -1,8 +1,10 @@
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, TcpStream};
 use std::io::{BufRead, Read, Write};
 use std::fs::File;
+use std::os::linux::raw::stat;
 use std::sync::{Arc, Mutex};
 
+use eframe::egui;
 use local_ip_address::local_ip;
 use sha2::digest::typenum::ToInt;
 
@@ -103,7 +105,7 @@ pub fn control_connection(mut dest: std::net::SocketAddr, files: Vec<String>, st
             }) {
                 let next_key = counter::get_inc();
                 let mut tmp = common::transfer_state::TransferState::default();
-                tmp.ttype = common::transfer_state::TransferType::Sending;
+                tmp.ttype = common::transfer_state::TransferType::ComputingHash;
                 tmp.percentage = 0.0;
                 tmp.original_filepath = original_path.clone();
                 tmp.peer = dest.clone();
@@ -210,13 +212,20 @@ pub fn data_connection(key: u32, mut dest: std::net::SocketAddr, file_str: Strin
         //println!("Lock acquired for transfer status - client.rs line 210");
         if let Some(state) = status_lock.get_mut(&key) {
             state.percentage = (total_bytes as f32 / file_size as f32) * 100.0;
+            state.ttype = common::transfer_state::TransferType::Sending;
         }
 
         //println!("Released lock for transfer status - client.rs line 58");
     }
+
+    let mut status_lock = status.lock().unwrap();
+    if let Some(state) = status_lock.get_mut(&key) {
+        state.percentage = 100.0;
+        state.ttype = common::transfer_state::TransferType::CompletelySent;
+    }   
 }
 
-pub fn info_socket(responders_list : &mut Arc<Mutex<HashSet<PingResponse>>>) {
+pub fn info_socket(responders_list : &mut Arc<Mutex<HashSet<PingResponse>>>, ctx: &Arc<Mutex<Option<egui::Context>>>) {
     let socket = UdpSocket::bind("0.0.0.0:24936").expect("Could not bind UDP socket");
 
     //println!("{}", socket.local_addr().unwrap().ip().to_string());
@@ -257,11 +266,18 @@ pub fn info_socket(responders_list : &mut Arc<Mutex<HashSet<PingResponse>>>) {
                 }
             }
 
-            responders.retain(|r| r.addr.ip() != local_ip);
+            //responders.retain(|r| r.addr.ip() != local_ip);
 
             //println!("Responders: {:?}", responders);
 
             *responders_list.lock().unwrap() = responders.clone();
+            
+            let ctx_lock = ctx.lock().unwrap();
+
+            if let Some(context) = ctx_lock.as_ref() {
+                context.request_repaint();
+                println!("Repaint requested");
+            }
 
             // Wait a few seconds before next broadcast
             std::thread::sleep(Duration::from_secs(3));

@@ -4,4 +4,6 @@
 - translate all the string to english
 - improve the ui
 - allow to cancel ongoing transfers
+- allow the user to select the destination folder and final file name
 - write the readme
+- clean up the code

@@ -1,6 +1,11 @@
 pub enum TransferType {
     Sending,
-    Receiving
+    Receiving,
+    ComputingHash,
+    VerifyingHash,
+    CompletelyReceived,
+    CompletelySent,
+    Error,
 }
 
 pub struct TransferState {

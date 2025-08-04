@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::net::TcpListener;
 use std::io::{Read, Write};
 use std::fs::File;
+use std::os::linux::raw::stat;
 
 use multiset::HashMultiSet;
 
@@ -345,13 +346,21 @@ pub fn data_connection(status: Arc<Mutex<HashMap<u32, common::transfer_state::Tr
                 }
             }
 
+            let mut status_lock = status.lock().unwrap();
+            if let Some(state) = status_lock.get_mut(&key) {
+                state.ttype = common::transfer_state::TransferType::VerifyingHash;
+                state.percentage = 100.0;
+            }
+
             let received_file_hash = hash_file_sha256(&file_name).unwrap();
 
             if received_file_hash != hash {
-                println!("File corrotto");
-                println!("Expected hash: {}, received hash: {}", bytes_to_hex(&hash), bytes_to_hex(&received_file_hash));
+                //println!("File corrotto");
+                //println!("Expected hash: {}, received hash: {}", bytes_to_hex(&hash), bytes_to_hex(&received_file_hash));
+                status_lock.get_mut(&key).unwrap().ttype = common::transfer_state::TransferType::Error;
             } else {
-                println!("File {} ricevuto completamente: {} bytes totali", file_name, total_bytes);
+                //println!("File {} ricevuto completamente: {} bytes totali", file_name, total_bytes);
+                status_lock.get_mut(&key).unwrap().ttype = common::transfer_state::TransferType::CompletelyReceived;
             }
 
             // Remove the file from accepted_files
@@ -374,7 +383,7 @@ pub fn info_socket() {
     loop {
         match socket.recv_from(&mut buf) {
             Ok((n, src)) => {
-                println!("Ricevuto ping da {}: {} bytes", src, n);
+                //println!("Ricevuto ping da {}: {} bytes", src, n);
                 let response = format!(
                     "{}\n{}\n",
                     whoami::username(),
